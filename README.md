@@ -1,6 +1,6 @@
 # Instagrammmm - Part I
 
-This is a basic instagram like app to allow users to post photos and view their feed.
+This is an Instagram clone with a custom Parse backend that allows a user to post photos and view a global photos feed.
 
 Time spent: 4 hours spent in total
 
@@ -18,7 +18,7 @@ The following **required** functionality is completed:
 The following **bonus** features are implemented:
 
 - [x] User can pull to refresh. (1 pts)
-- [x] User can load past tweets infinitely (2 pts)
+- [x] User can load past posts infinitely (2 pts)
 
 
 ## Video Walkthrough
