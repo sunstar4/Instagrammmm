@@ -16,12 +16,24 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBOutlet weak var tableView: UITableView!
   
         var posts = [PFObject]()
+        
+    var numberOfPost: Int!
+    
+        let myRefreshControl = UIRefreshControl()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
+        
+        
+       //myRefreshControl.add....self, action: #selector()-the selector when the refresher get trigger, for: .valueChanged)
+        myRefreshControl.addTarget(self, action: #selector(loadPosts), for: .valueChanged)
+        //add below to see the loading wheel
+        tableView.refreshControl = myRefreshControl
+        
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.keyboardDismissMode = .interactive
         
         
         // Do any additional setup after loading the view.
@@ -32,19 +44,43 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
+        
         //do the query, based on Parse, class name is "Posts"
         //inquery the post, storage the data, then reload the TableView
         let query = PFQuery(className: "Posts")
         query.includeKey("author")
-        query.limit = 20
+        query.limit = 30
         
         query.findObjectsInBackground { (posts, Error) in
             if posts != nil {
                 self.posts = posts!
                 self.tableView.reloadData()
+                
+                self .myRefreshControl.endRefreshing()
+                
             }
         }
     }
+    @objc func loadPosts() {
+        
+        //do the query, based on Parse, class name is "Posts"
+        //inquery the post, storage the data, then reload the TableView
+        let query = PFQuery(className: "Posts")
+        query.includeKey("author")
+        query.limit = 30
+        
+        query.findObjectsInBackground { (posts, Error) in
+            if posts != nil {
+                self.posts = posts!
+                self.tableView.reloadData()
+                
+                self .myRefreshControl.endRefreshing()
+                
+            }
+        }
+        
+    }
+    
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
