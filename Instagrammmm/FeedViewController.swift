@@ -49,7 +49,7 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
         //inquery the post, storage the data, then reload the TableView
         let query = PFQuery(className: "Posts")
         query.includeKey("author")
-        query.limit = 30
+        query.limit = 35
         
         query.findObjectsInBackground { (posts, Error) in
             if posts != nil {
@@ -57,7 +57,7 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
                 self.tableView.reloadData()
                 
                 self .myRefreshControl.endRefreshing()
-                
+        
             }
         }
     }
@@ -67,7 +67,9 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
         //inquery the post, storage the data, then reload the TableView
         let query = PFQuery(className: "Posts")
         query.includeKey("author")
-        query.limit = 30
+        numberOfPost = 20
+        query.limit = 40
+        
         
         query.findObjectsInBackground { (posts, Error) in
             if posts != nil {
@@ -80,6 +82,33 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         
     }
+    
+    
+ 
+    func loadMorePosts() {
+        
+        //do the query, based on Parse, class name is "Posts"
+        //inquery the post, storage the data, then reload the TableView
+        let query = PFQuery(className: "Posts")
+        query.includeKey("author")
+        query.limit = self.numberOfPost + 20
+        
+        query.findObjectsInBackground { (posts, Error) in
+            if posts != nil {
+                self.posts = posts!
+                self.tableView.reloadData()
+                
+              //self .myRefreshControl.endRefreshing()
+                
+            }
+        }
+    }
+    
+    
+    
+    
+    
+    
     
     
     
