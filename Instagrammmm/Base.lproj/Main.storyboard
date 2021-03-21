@@ -74,7 +74,7 @@
         <!--Login View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="LoginViewController" customModule="Instagrammmm" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="LoginViewController" id="BYZ-38-t0r" customClass="LoginViewController" customModule="Instagrammmm" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -164,7 +164,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="871.01449275362324" y="86.383928571428569"/>
+            <point key="canvasLocation" x="1323" y="86"/>
         </scene>
         <!--Feed View Controller-->
         <scene sceneID="C2i-rD-yXp">
@@ -236,6 +236,11 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="lwJ-gq-aoS">
+                        <barButtonItem key="leftBarButtonItem" title="Logout" id="Ehe-a0-EVO">
+                            <connections>
+                                <action selector="onLogoutButton:" destination="JR2-5s-lvQ" id="UOU-t6-BK4"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Camera" image="insta_camera_btn" id="Y0d-3G-qT3">
                             <connections>
                                 <segue destination="n1X-bO-2ON" kind="presentation" id="jxK-xg-0ET"/>
@@ -253,7 +258,7 @@
         <!--Navigation Controller-->
         <scene sceneID="aNd-TV-ghv">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="oeG-lh-u3r" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="FeedNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="oeG-lh-u3r" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="TjE-vb-1eF">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
@@ -271,7 +276,7 @@
         <!--Navigation Controller-->
         <scene sceneID="uZj-uA-eXs">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="goo-7O-mui" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="LoginNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="goo-7O-mui" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="PQC-AE-KZP">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>

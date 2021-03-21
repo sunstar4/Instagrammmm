@@ -14,12 +14,12 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     @IBOutlet weak var tableView: UITableView!
-  
-        var posts = [PFObject]()
-        
+    
+    var posts = [PFObject]()
+    
     var numberOfPost: Int!
     
-        let myRefreshControl = UIRefreshControl()
+    let myRefreshControl = UIRefreshControl()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,7 +27,7 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         
         
-       //myRefreshControl.add....self, action: #selector()-the selector when the refresher get trigger, for: .valueChanged)
+        //myRefreshControl.add....self, action: #selector()-the selector when the refresher get trigger, for: .valueChanged)
         myRefreshControl.addTarget(self, action: #selector(loadPosts), for: .valueChanged)
         //add below to see the loading wheel
         tableView.refreshControl = myRefreshControl
@@ -57,7 +57,7 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
                 self.tableView.reloadData()
                 
                 self .myRefreshControl.endRefreshing()
-        
+                
             }
         }
     }
@@ -84,7 +84,7 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
- 
+    
     func loadMorePosts() {
         
         //do the query, based on Parse, class name is "Posts"
@@ -98,18 +98,10 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
                 self.posts = posts!
                 self.tableView.reloadData()
                 
-              //self .myRefreshControl.endRefreshing()
                 
             }
         }
     }
-    
-    
-    
-    
-    
-    
-    
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -117,7 +109,7 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    
+        
         //create an array of PFObject above override func viewDidLoad
         let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell") as! PostCell
         //use indexPath to grab particular post
@@ -136,18 +128,37 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
         cell.photoView.af.setImage(withURL: url)
         
         return cell
+        
+    }
+    
+    /*
+     // MARK: - Navigation
+     
+     // In a storyboard-based application, you will often want to do a little preparation before navigation
+     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+     // Get the new view controller using segue.destination.
+     // Pass the selected object to the new view controller.
+     }
+     */
+    
+    @IBAction func onLogoutButton(_ sender: Any) {
+        PFUser.logOut()
+        
+        //passing the XML
+        let main = UIStoryboard(name: "Main", bundle: nil)
+        let loginViewController = main.instantiateViewController(identifier: "LoginViewController")
+        
+        //let delegate = UIApplication.shared.delegate as! AppDelegate
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let delegate = windowScene.delegate as? SceneDelegate
+        
+        else {
+            return
+        }
+        
+        delegate.window?.rootViewController = loginViewController
+    
     
     }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
-    }
+}
 

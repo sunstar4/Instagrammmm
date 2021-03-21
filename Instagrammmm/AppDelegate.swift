@@ -10,12 +10,13 @@ import Parse
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
-
-
+    
+    var navigationController: UINavigationController?
+    var window: UIWindow?
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        
+       
         let parseConfig = ParseClientConfiguration {
                     $0.applicationId = "w7tGWzwLcYrcsHprYjcUGazvq299TpXIG2oAT7GF" // <- UPDATE
                     $0.clientKey = "QmywWXTVNrXHnDYmt6XZYl6JIxz4CcTupin97w5h" // <- UPDATE
@@ -23,6 +24,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
             Parse.initialize(with: parseConfig)
     
+        if PFUser.current() != nil {
+            let main = UIStoryboard(name: "Main", bundle: nil)
+            let feedNavigationController = main.instantiateViewController(identifier: "FeedNavigationController")
+            
+            window?.rootViewController = feedNavigationController
+            
+           
+        }
         
         
         return true
@@ -42,6 +51,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
 
-
+    
 }
 
