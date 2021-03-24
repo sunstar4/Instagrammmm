@@ -22,7 +22,6 @@ class CameraViewController: UIViewController, UIImagePickerControllerDelegate, U
         // Do any additional setup after loading the view.
         
         
-        
     }
     
     

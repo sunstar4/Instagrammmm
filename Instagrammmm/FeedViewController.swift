@@ -8,36 +8,57 @@
 import UIKit
 import Parse
 import AlamofireImage
+import MessageInputBar
 
 
-class FeedViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    
+class FeedViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, MessageInputBarDelegate {
     
     @IBOutlet weak var tableView: UITableView!
     
-    var posts = [PFObject]()
+    let commentBar = MessageInputBar()
+    var showsCommentBar = false
     
+    var posts = [PFObject]()
     var numberOfPost: Int!
+    var selectedPost: PFObject!
+    var comment = [PFObject]()
     
     let myRefreshControl = UIRefreshControl()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        
-        
         //myRefreshControl.add....self, action: #selector()-the selector when the refresher get trigger, for: .valueChanged)
         myRefreshControl.addTarget(self, action: #selector(loadPosts), for: .valueChanged)
         //add below to see the loading wheel
         tableView.refreshControl = myRefreshControl
         
+        commentBar.inputTextView.placeholder = "Add a comment...."
+        commentBar.sendButton.title = "Post"
+        commentBar.delegate = self
+        
         tableView.delegate = self
         tableView.dataSource = self
         
+        tableView.keyboardDismissMode = .interactive
         
-        // Do any additional setup after loading the view.
-        
+        let center = NotificationCenter.default
+        center.addObserver(self, selector: #selector(keyboardWillBeHiddent(note:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc func keyboardWillBeHiddent(note: Notification) {
+        commentBar.inputTextView.text = nil
+        showsCommentBar = false
+        becomeFirstResponder()
+    }
+    
+    //hacking the framework
+    var inputAccerssroyView: UIView? {
+        return commentBar
+    }
+    
+    override var canBecomeFirstResponder: Bool {
+        return showsCommentBar
     }
     
     //after finsihing compose, want the tableview to refresh, use code below.
@@ -48,7 +69,8 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
         //do the query, based on Parse, class name is "Posts"
         //inquery the post, storage the data, then reload the TableView
         let query = PFQuery(className: "Posts")
-        query.includeKey("author")
+        //not only we fetch the ("author", we need "comments" & "(each comments fetch from the related author)") ('","","" - are the keys)
+        query.includeKeys(["author", "comments", "comments.author"])
         query.limit = 35
         
         query.findObjectsInBackground { (posts, Error) in
@@ -61,6 +83,46 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         }
     }
+    
+    func messageInputBar(_ inputBar: MessageInputBar, didPressSendButtonWith text: String) {
+        
+        //create the comment
+        
+        //clear & diusmiss the inpuyt bar
+        /*commentBar.inputTextView.text = nil
+        showsCommentBar = false
+        becomeFirstResponder()
+        commentBar.inputTextView.resignFirstResopnder()
+    }
+        */
+        
+    
+        let comment = PFObject(className: "Comments")
+        //  comment["text"] = "This is a random comment"
+        //  comment["post"] = posts
+        //  comment["author"] = PFUser.current()!
+        comment["text"] = text
+        comment["post"] = selectedPost
+        comment["author"] = PFUser.current()!
+        
+        selectedPost.add(comment, forKey: "comments")
+        
+        selectedPost.saveInBackground {(success, Error) in
+            if success {
+                print("Another comment saved")
+            } else {
+                print("Error saving another comment")
+            }
+        }
+        tableView.reloadData()
+    }
+    
+    //clear & dismess the input bar
+    /*commentBar.inputTextView.text = nil
+    showsCommentBar = false
+    becomeFirstResponder()
+    commentBar.inputTextView.resignFirstResponder()
+}*/
     @objc func loadPosts() {
         
         //do the query, based on Parse, class name is "Posts"
@@ -83,8 +145,6 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
         
     }
     
-    
-    
     func loadMorePosts() {
         
         //do the query, based on Parse, class name is "Posts"
@@ -105,39 +165,140 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        //# of comments+1, for the actual post, one for each comment
+        let post = posts[section]
+        //grab the comment (?? nil coalescing operator - convenient way to express default value)
+        let comments = (post["comments"] as? [PFObject]) ?? []
+        
+        //return 1, then return comments.count+1
+        return comments.count + 2
+    }
+    //give each post its own section, each section have different # of rows
+    func numberOfSections(in tableView: UITableView) -> Int {
         return posts.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        //create an array of PFObject above override func viewDidLoad
-        let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell") as! PostCell
-        //use indexPath to grab particular post
-        let post = posts[indexPath.row]
-        
-        let user = post["author"] as! PFUser
-        cell.userNameLabel.text = user.username
-        
-        cell.captionLabel.text = post["caption"] as? String
-        
-        //grab image URL
-        let imageFile = post["image"] as! PFFileObject
-        let urlString = imageFile.url!
-        let url = URL(string: urlString)!
-        
-        cell.photoView.af.setImage(withURL: url)
-        
-        return cell
-        
+        let post = posts[indexPath.section]
+        let comments = (post["comments"] as? [PFObject]) ?? []
+        //how to tell what type of cell I return. which one is the "Post Cell", the 0 row
+        if indexPath.row == 0 {
+            //create an array of PFObject above override func viewDidLoad
+            let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell") as! PostCell
+            //use indexPath to grab particular post
+            
+            let user = post["author"] as! PFUser
+            cell.userNameLabel.text = user.username
+            
+            cell.captionLabel.text = post["caption"] as? String
+            
+            //grab image URL
+            let imageFile = post["image"] as! PFFileObject
+            let urlString = imageFile.url!
+            let url = URL(string: urlString)!
+            
+            cell.photoView.af.setImage(withURL: url)
+            
+            return cell
+        } else if indexPath.row <= comments.count {
+            print("TEST")
+            print(indexPath.row)
+            print("TEST")
+            print(comments.count)
+            let cell = tableView.dequeueReusableCell(withIdentifier: "CommentCell") as! CommentCell
+            //indexPath.row-1 = the first comment
+            let comment = comments[indexPath.row - 1]
+            cell.commentLabel.text = comment["text"] as! String
+            
+            let user = comment["author"] as! PFUser
+            cell.nameLabel.text = user.username
+            return cell
+        //} else {
+          //  let cell = tableView.dequeueReusableCell(withIdentifier: "AddCommentCell")!
+          //  return cell
+        }
+            let cell = UITableViewCell()
+            return cell
     }
     
-    /*
-     // MARK: - Navigation
+    //create an array of PFObject above override func viewDidLoad
+    //let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell") as! PostCell
+    //use indexPath to grab particular post
+    //let post = posts[indexPath.row]
+    
+    /*    let user = post["author"] as! PFUser
+     cell.userNameLabel.text = user.username
      
-     // In a storyboard-based application, you will often want to do a little preparation before navigation
-     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-     // Get the new view controller using segue.destination.
-     // Pass the selected object to the new view controller.
+     cell.captionLabel.text = post["caption"] as? String
+     
+     //grab image URL
+     let imageFile = post["image"] as! PFFileObject
+     let urlString = imageFile.url!
+     let url = URL(string: urlString)!
+     
+     cell.photoView.af.setImage(withURL: url)
+     
+     return cell
+     
+     }
+     */
+    //choose a post to add comment. everytime I select a table, a post, will add this change comments depend on how many time I click on the photo
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        //video 4 start over
+        let post = posts[indexPath.row]
+        
+        let comment = PFObject(className: "Comments")
+        comment["text"] = "This is a random comment"
+        comment["post"] = post
+        comment["author"] = PFUser.current()!
+        //comments - make up, every post should have an array called "comments"
+        post.add(comment, forKey: "comments")
+        
+        post.saveInBackground { (success, Error) in
+        if success {
+        print("Comment saved")
+        } else {
+        print("Error saving comment")
+        }
+        }
+        
+        
+        
+        
+    }
+        
+        //Below lines are later added****
+        /*let post = posts[indexPath.section]
+        //create comment object
+        let comments = (post["comments"] as? [PFObject]) ?? []
+        
+        if indexPath.row == comments.count + 1 {
+            showsCommentBar = true
+            becomeFirstResponder()
+            //commentBar.inputView?.becomeFirstResponder()
+            commentBar.inputTextView.becomeFirstResponder()
+            selectedPost = post
+      
+        
+    }*/
+    
+        
+        /*
+     //Below are the fake comments
+     let comment = PFObject(className: "Comments")
+     comment["text"] = "This is a random comment"
+     comment["post"] = post
+     comment["author"] = PFUser.current()!
+     
+     post.add(comment, forKey: "comments")
+     
+     post.saveInBackground { (success, Error) in
+     if success {
+     print("Comment saved")
+     } else {
+     print("Error saving comment")
+     }
      }
      */
     
@@ -157,8 +318,10 @@ class FeedViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         
         delegate.window?.rootViewController = loginViewController
-    
-    
+        
+        
     }
+    
+    
 }
 
